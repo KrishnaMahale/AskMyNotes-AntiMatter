@@ -9,6 +9,7 @@ import { requireAuth, AuthedRequest } from "./authMiddleware";
 import { supabaseAdmin } from "./supabase";
 import { ingestDocument } from "./ingestion";
 import { handleQaRequest } from "./qa";
+import { handleQaFollowup } from "./qaFollowup";
 import { handleStudyMcq, handleStudyShort } from "./study";
 import { z } from "zod";
 
@@ -198,6 +199,20 @@ app.post("/qa", requireAuth, async (req: AuthedRequest, res) => {
     return res
       .status(500)
       .json({ error: err?.message ?? "Internal server error during QA" });
+  }
+});
+
+// POST /qa/followup
+app.post("/qa/followup", requireAuth, async (req: AuthedRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const result = await handleQaFollowup(userId, req.body);
+    return res.json(result);
+  } catch (err: any) {
+    console.error("POST /qa/followup error", err);
+    return res
+      .status(500)
+      .json({ error: err?.message ?? "Internal server error during QA follow-up" });
   }
 });
 
